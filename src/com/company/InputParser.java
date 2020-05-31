@@ -8,7 +8,8 @@ public class InputParser {
     private DeclarationInputParser declarationInputParser = new DeclarationInputParser();
     private String declarationRegEx ="\\w+\\s\\w+;";
     private String variableDeclarationRegEx = "\\s+";
-    private String variableAssignmentRegEx = "\\w+\\s\\w+\\s=\\s\\d+;";
+    private String variableDeclarationWithAssignmentRegEx = "\\w+\\s\\w+\\s=\\s\\d+;";
+    private String variableAssignmentRegEx = "\\w+\\s=\\s\\d+;";
     private Pattern pattern;
     private Matcher matcher;
 
@@ -19,18 +20,35 @@ public class InputParser {
         if (isDeclaration()) {
             System.out.println("we have declaration here");
 
-//            String declarationType = words[0];
             String variableName = words[1].substring(0, words[1].length() - 1);
-            this.declarationInputParser.declare(variableName);
+            try {
+                this.declarationInputParser.declare(variableName);
+            } catch (Exception e) {
+                System.out.println(e.toString());
+            }
+
         } else if (isDeclarationWithAssigment()) {
             System.out.println("we have assignment here");
 
-            String declarationType = words[0];
             String variableName = words[1];
             int variableValue = Integer.parseInt(words[3].substring(0, words[3].length() - 1));
-//            System.out.println(words[3].substring(0, words[3].length() - 1));
-            this.declarationInputParser.declare(variableName);
-            this.declarationInputParser.assign(variableName, variableValue);
+
+            try {
+                this.declarationInputParser.declare(variableName);
+                this.declarationInputParser.assign(variableName, variableValue);
+            } catch (Exception e) {
+                System.out.println(e.toString());
+            }
+
+        } else if (isAssignment()) {
+            String variableName = words[0];
+            int variableValue = Integer.parseInt(words[2].substring(0, words[2].length() - 1));
+
+            try {
+                this.declarationInputParser.assign(variableName, variableValue);
+            } catch (Exception e) {
+                System.out.println(e.toString());
+            }
         }
     }
 
@@ -42,11 +60,16 @@ public class InputParser {
     }
 
     private boolean isDeclarationWithAssigment() {
-        if (this.inputToParse.matches(variableAssignmentRegEx)) {
+        if (this.inputToParse.matches(variableDeclarationWithAssignmentRegEx)) {
             return true;
         }
         return false;
     }
 
-
+    private boolean isAssignment() {
+        if (this.inputToParse.matches(variableAssignmentRegEx)) {
+            return true;
+        }
+        return false;
+    }
 }
