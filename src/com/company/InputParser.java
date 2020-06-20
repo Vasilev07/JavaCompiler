@@ -15,17 +15,46 @@ public class InputParser {
     private String variableValueCheck = "\\w+";
     private String variableAssigmentToExistingVariableWithExpression = "\\w+\\s=\\s(\\w+((\\s[+]\\s)+|(\\s[-]\\s))+)+\\w+;";
     private String variableDeclarationWithAssigmentToExpression = "\\w+\\s\\w+\\s=\\s(\\w+((\\s[+]\\s)+|(\\s[-]\\s))+)+\\w+;";
+    private String methodDeclaration = "(\\w+\\s\\w+)([(]\\s?(\\w+\\s\\w+[,]?\\s?)+[)])\\s[{]";
+    private String methodParametersRegex = "([(]\\s?(\\w+\\s\\w+[,]?\\s?)+[)])";
+    boolean isStillInMethodDeclaration = false;
+    String lastMethodName = "";
 
+    // \w+\s\w+\s=\s(\w+((\s[+]\s)+|(\s[-]\s))+)+\w+;
     public void parse(String input) {
         this.inputToParse = input;
         String[] words = this.inputToParse.split("\\s+");
 
-        if (isDeclaration()) {
+        if (isMethodDeclaration()) {
+            isStillInMethodDeclaration = true;
+            String variableName = words[1].substring(0, words[1].indexOf("("));
+            this.lastMethodName = variableName;
+            String methodParameters = this.inputToParse.substring(this.inputToParse.indexOf("(") + 1, this.inputToParse.indexOf(")"));
+            if (methodParameters.length() <= 2) {
+                // single parameter
+            } else {
+                String[] methodParametersArray = methodParameters.split(",\\s");
+                for (String token : methodParametersArray) {
+                    System.out.println(token);
+                }
+            }
+
+            try {
+                this.declarationInputParser.declare(variableName);
+            } catch (Exception e) {
+
+            }
+        }else if (isDeclaration()) {
             System.out.println("we have declaration here");
 
             String variableName = words[1].substring(0, words[1].length() - 1);
             try {
-                this.declarationInputParser.declare(variableName);
+                if (this.isStillInMethodDeclaration) {
+                    //method declaration
+                    this.declarationInputParser.declare(lastMethodName + "_" + variableName);
+                } else {
+                    this.declarationInputParser.declare(variableName);
+                }
             } catch (Exception e) {
                 System.out.println(e.toString());
             }
@@ -37,8 +66,15 @@ public class InputParser {
             int variableValue = Integer.parseInt(words[3].substring(0, words[3].length() - 1));
 
             try {
-                this.declarationInputParser.declare(variableName);
-                this.declarationInputParser.assign(variableName, variableValue);
+                if (this.isStillInMethodDeclaration) {
+                    String currentVariableName = lastMethodName + "_" + variableName;
+                    this.declarationInputParser.declare(currentVariableName);
+                    this.declarationInputParser.assign(currentVariableName, variableValue);
+                } else {
+                    this.declarationInputParser.declare(variableName);
+                    this.declarationInputParser.assign(variableName, variableValue);
+                }
+
             } catch (Exception e) {
                 System.out.println(e.toString());
             }
@@ -48,7 +84,12 @@ public class InputParser {
             int variableValue = Integer.parseInt(words[2].substring(0, words[2].length() - 1));
 
             try {
-                this.declarationInputParser.assign(variableName, variableValue);
+                if (this.isStillInMethodDeclaration) {
+                    String currentVariableName = lastMethodName + "_" + variableName;
+                    this.declarationInputParser.assign(currentVariableName, variableValue);
+                } else {
+                    this.declarationInputParser.assign(variableName, variableValue);
+                }
             } catch (Exception e) {
                 System.out.println(e.toString());
             }
@@ -57,9 +98,16 @@ public class InputParser {
             String existingVariableName = words[2].substring(0, words[2].length() - 1);
 
             try {
-                int existingVariableValue = this.declarationInputParser.getVariableValue(existingVariableName);
+                if (isStillInMethodDeclaration) {
+                    String newMethodVariableName = lastMethodName + "_" + newVariableName;
+                    String existingMethodVariableName = lastMethodName + "_" + existingVariableName;
 
-                this.declarationInputParser.assign(newVariableName, existingVariableValue);
+                    int existingVariableValue = this.declarationInputParser.getVariableValue(existingMethodVariableName);
+                    this.declarationInputParser.assign(newMethodVariableName, existingVariableValue);
+                } else {
+                    int existingVariableValue = this.declarationInputParser.getVariableValue(existingVariableName);
+                    this.declarationInputParser.assign(newVariableName, existingVariableValue);
+                }
             } catch (Exception e) {
                 System.out.println("Such variable does not exist");
             }
@@ -68,14 +116,24 @@ public class InputParser {
             String existingVariableName = words[3].substring(0, words[3].length() - 1);
 
             try {
-                int existingVariableValue = this.declarationInputParser.getVariableValue(existingVariableName);
-                this.declarationInputParser.declare(newVariableName);
+                if (isStillInMethodDeclaration) {
+                    String existingMethodVariableName = lastMethodName + "_" + words[3].substring(0, words[3].length() - 1);
+                    String newMethodVariableName = lastMethodName + "_" + newVariableName;
 
-                this.declarationInputParser.assign(newVariableName, existingVariableValue);
+                    int existingVariableValue = this.declarationInputParser.getVariableValue(existingMethodVariableName);
+                    this.declarationInputParser.declare(newMethodVariableName);
+                    this.declarationInputParser.assign(newMethodVariableName, existingVariableValue);
+                } else {
+                    int existingVariableValue = this.declarationInputParser.getVariableValue(existingVariableName);
+                    this.declarationInputParser.declare(newVariableName);
+
+                    this.declarationInputParser.assign(newVariableName, existingVariableValue);
+                }
+
             } catch (Exception e) {
                 System.out.println("Such variable does not exist");
             }
-        } else if (isVariableCheck()) {
+        } else if (isVariableCheck() && !this.isStillInMethodDeclaration) {
             String variableName = words[0];
             try {
                 int existingVariableValue = this.declarationInputParser.getVariableValue(variableName);
@@ -89,8 +147,13 @@ public class InputParser {
             words[words.length - 1] = words[words.length - 1].substring(0, words[words.length - 1].length() - 1);
 
             String[] expression = getSliceOfArray(words, 2, words.length);
+            if (isStillInMethodDeclaration) {
+                String methodVariableName = lastMethodName + "_" + variableName;
 
-            this.performComputation(variableName, expression);
+                this.performComputation(methodVariableName, expression);
+            } else {
+                this.performComputation(variableName, expression);
+            }
 
         } else if(isVariableDeclarationWithAssigmentOfExpression()) {
             String variableName = words[1];
@@ -98,12 +161,21 @@ public class InputParser {
             String[] expression = getSliceOfArray(words, 3, words.length);
 
             try {
-                this.declarationInputParser.declare(variableName);
-                this.performComputation(variableName, expression);
+                if (isStillInMethodDeclaration) {
+                    String methodVariableName = lastMethodName + "_" + variableName;
 
+                    this.declarationInputParser.declare(methodVariableName);
+                    this.performComputation(methodVariableName, expression);
+                } else  {
+                    this.declarationInputParser.declare(variableName);
+                    this.performComputation(variableName, expression);
+                }
             } catch (Exception e) {
                 System.out.println("Such variable does not exist");
             }
+        } else if (endOfMethodDeclaration()) {
+            this.isStillInMethodDeclaration = false;
+            this.lastMethodName = "";
         }
     }
 
@@ -208,6 +280,20 @@ public class InputParser {
     }
     private boolean isVariableDeclarationWithAssigmentOfExpression() {
         if (this.inputToParse.matches(variableDeclarationWithAssigmentToExpression)) {
+            return true;
+        }
+        return false;
+    }
+
+    private boolean endOfMethodDeclaration() {
+        if (this.inputToParse.matches("[}]")) {
+            return true;
+        }
+        return false;
+    }
+
+    private boolean isMethodDeclaration() {
+        if (this.inputToParse.matches(methodDeclaration)) {
             return true;
         }
         return false;
