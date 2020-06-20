@@ -8,12 +8,11 @@ public class DeclarationInputParser {
 
     public void declare(String variable) throws Exception {
         if (!this.declarations.containsKey(variable)) {
-            currentDeclaration.add(variable);
+            this.currentDeclaration.add(variable);
 
             this.declarations = this.currentDeclaration.getDeclarations();
         } else {
             throw new Exception("Variable" + variable + " has already been declared.");
-//            System.out.println("Variable " + variable + " has already been declared.");
         }
     }
 
@@ -24,4 +23,13 @@ public class DeclarationInputParser {
             throw new Exception("Variable " + variable + " is not declared.");
         }
     }
+
+    public int getVariableValue(String variableName) throws Exception {
+        if (this.declarations.containsKey(variableName)) {
+            return this.declarations.get(variableName);
+        } else {
+            throw new Exception("Variable " + variableName + " is not declared.");
+        }
+    }
+
 }
