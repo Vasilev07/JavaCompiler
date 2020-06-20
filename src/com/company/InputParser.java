@@ -13,7 +13,8 @@ public class InputParser {
     private String variableAssignmentToExistingVariableRegEx = "\\w+\\s=\\s\\w+;";
     private  String variableDeclarationWithAssignmentToExistingVariableRegEx = "\\w+\\s\\w+\\s=\\s\\w+;";
     private String variableValueCheck = "\\w+";
-    private String variableAssigmentToExistingVariableWithEpression = "\\w+\\s=\\s(\\w+((\\s[+]\\s)+|(\\s[-]\\s))+)+\\w+;";
+    private String variableAssigmentToExistingVariableWithExpression = "\\w+\\s=\\s(\\w+((\\s[+]\\s)+|(\\s[-]\\s))+)+\\w+;";
+    private String variableDeclarationWithAssigmentToExpression = "\\w+\\s\\w+\\s=\\s(\\w+((\\s[+]\\s)+|(\\s[-]\\s))+)+\\w+;";
 
     public void parse(String input) {
         this.inputToParse = input;
@@ -82,55 +83,68 @@ public class InputParser {
             } catch (Exception e) {
                 System.out.println("Such variable does not exist");
             }
-        } else if (isVariableAssigmentToExistingVariableWithEpression()) {
+        } else if (isVariableAssigmentToExistingVariableWithExpression()) {
             String variableName = words[0];
             // remove semicolon
             words[words.length - 1] = words[words.length - 1].substring(0, words[words.length - 1].length() - 1);
 
             String[] expression = getSliceOfArray(words, 2, words.length);
 
-            int result;
-            try {
-                result = this.declarationInputParser.getVariableValue(expression[0]);
-            } catch (Exception e) {
-                result = Integer.parseInt(expression[0]);
-            }
+            this.performComputation(variableName, expression);
 
-            String previousSign = "";
-            int currentNumber = 0;
-
-            for (int i = 1; i < expression.length; i++) {
-                if(i % 2 == 0) {
-                    try {
-                        System.out.println(expression[i]);
-                        new java.math.BigInteger(expression[i]);
-                        //it is number
-                        currentNumber = Integer.parseInt(expression[i]);
-                    } catch (NumberFormatException e) {
-                        // it is variable
-                        try {
-                            currentNumber = this.declarationInputParser.getVariableValue(expression[i]);
-                        } catch (Exception ex) {
-                            System.out.println("Such variable does not exist");
-                        }
-                    }
-
-                    result = computeExpression(result, currentNumber, previousSign);
-                } else {
-                    // we have sign
-                    System.out.println("is addition " + expression[i].equals("+"));
-                    previousSign = expression[i];
-                }
-            }
+        } else if(isVariableDeclarationWithAssigmentOfExpression()) {
+            String variableName = words[1];
+            words[words.length - 1] = words[words.length - 1].substring(0, words[words.length - 1].length() - 1);
+            String[] expression = getSliceOfArray(words, 3, words.length);
 
             try {
-                System.out.println("Result of computation" + result);
-                this.declarationInputParser.assign(variableName, result);
-//                result = 0;
+                this.declarationInputParser.declare(variableName);
+                this.performComputation(variableName, expression);
+
             } catch (Exception e) {
                 System.out.println("Such variable does not exist");
             }
+        }
+    }
 
+    private void performComputation(String variableName, String[] expression) {
+        int result;
+        try {
+            result = this.declarationInputParser.getVariableValue(expression[0]);
+        } catch (Exception e) {
+            result = Integer.parseInt(expression[0]);
+        }
+
+        String previousSign = "";
+        int currentNumber = 0;
+
+        for (int i = 1; i < expression.length; i++) {
+            if(i % 2 == 0) {
+                try {
+                    System.out.println(expression[i]);
+                    new java.math.BigInteger(expression[i]);
+                    //it is number
+                    currentNumber = Integer.parseInt(expression[i]);
+                } catch (NumberFormatException e) {
+                    // it is variable
+                    try {
+                        currentNumber = this.declarationInputParser.getVariableValue(expression[i]);
+                    } catch (Exception ex) {
+                        System.out.println("Such variable does not exist");
+                    }
+                }
+
+                result = computeExpression(result, currentNumber, previousSign);
+            } else {
+                // we have sign
+                previousSign = expression[i];
+            }
+        }
+
+        try {
+            this.declarationInputParser.assign(variableName, result);
+        } catch (Exception e) {
+            System.out.println("Such variable does not exist");
         }
     }
 
@@ -186,14 +200,20 @@ public class InputParser {
         return false;
     }
 
-    private boolean isVariableAssigmentToExistingVariableWithEpression() {
-        if (this.inputToParse.matches(variableAssigmentToExistingVariableWithEpression)) {
+    private boolean isVariableAssigmentToExistingVariableWithExpression() {
+        if (this.inputToParse.matches(variableAssigmentToExistingVariableWithExpression)) {
+            return true;
+        }
+        return false;
+    }
+    private boolean isVariableDeclarationWithAssigmentOfExpression() {
+        if (this.inputToParse.matches(variableDeclarationWithAssigmentToExpression)) {
             return true;
         }
         return false;
     }
 
-    public static String[] getSliceOfArray(String[] arr, int start, int end)
+    private static String[] getSliceOfArray(String[] arr, int start, int end)
     {
 
         String[] slice = new String[end - start];
