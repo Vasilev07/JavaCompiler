@@ -277,7 +277,12 @@ public class InputParser {
             int methodExpreessionValue = this.declarationInputParser.getVariableValue(methodName);
             String methodExpressionToCompute = this.declarationInputParser.methodExpressionValue(methodExpreessionValue);
             String methodResultVariableName = "result_" + methodName;
-            this.declarationInputParser.declare(methodResultVariableName);
+            try {
+                this.declarationInputParser.getVariableValue(methodResultVariableName);
+            } catch (Exception e) {
+                this.declarationInputParser.declare(methodResultVariableName);
+            }
+
             String[] expressions = methodExpressionToCompute.split(" ");
             this.shouldMakeComputatioForMethod = true;
             this.lastMethodName = methodName;
