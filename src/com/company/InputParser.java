@@ -235,6 +235,7 @@ public class InputParser {
             this.performMethodInvocation(methodName);
 
             try {
+
                 int resultOfMethodInvocation = this.declarationInputParser.getVariableValue("result_" + methodName);
                 this.declarationInputParser.declare(variableName);
                 this.declarationInputParser.assign(variableName, resultOfMethodInvocation);
@@ -251,6 +252,7 @@ public class InputParser {
             this.performMethodInvocation(methodName);
 
             try {
+
                 int resultOfMethodInvocation = this.declarationInputParser.getVariableValue("result_" + methodName);
 
                 this.declarationInputParser.assign(variableName, resultOfMethodInvocation);
@@ -287,7 +289,6 @@ public class InputParser {
             this.shouldMakeComputatioForMethod = true;
             this.lastMethodName = methodName;
             this.performComputation(methodResultVariableName, expressions);
-            this.declarationInputParser.declare();
         } catch (Exception e) {
             this.shouldMakeComputatioForMethod = false;
             System.out.println("NO variable found");
@@ -329,8 +330,11 @@ public class InputParser {
         int result;
         String initVariable = "";
         try {
-            result = this.declarationInputParser.getVariableValue(expression[0]);
-
+            if (!shouldMakeComputatioForMethod) {
+                result = this.declarationInputParser.getVariableValue(expression[0]);
+            } else {
+                throw new Exception("we have to perform actions for method invocation");
+            }
         } catch (Exception e) {
             try {
                 result = Integer.parseInt(expression[0]);
