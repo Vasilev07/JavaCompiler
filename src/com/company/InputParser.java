@@ -300,13 +300,13 @@ public class InputParser {
             } catch (Exception e2) {
                 try {
                     String variable = "";
-                 for (String key: this.declarationInputParser.getAllDeclarationKeys()) {
-                      if (key.matches(lastMethodName + "_" + expression[0] + "_\\d")) {
-                          variable = key;
-                          initVariable = key;
-                          break;
+                     for (String key: this.declarationInputParser.getAllDeclarationKeys()) {
+                          if (key.matches(lastMethodName + "_" + expression[0] + "_\\d")) {
+                              variable = key;
+                              initVariable = key;
+                              break;
+                          }
                       }
-                  }
                   result = this.declarationInputParser.getVariableValue(variable);
                 } catch (Exception e3) {
                     System.out.println(e3);
@@ -331,7 +331,7 @@ public class InputParser {
                         if (shouldMakeComputatioForMethod) {
                             String variable = "";
                             for (String key: this.declarationInputParser.getAllDeclarationKeys()) {
-                                if (key.matches(lastMethodName + "_" + expression[0] + "_\\d") && !key.equals(initVariable)) {
+                                if (key.matches(lastMethodName + "_" + expression[i] + "_\\d") && !key.equals(initVariable)) {
                                     variable = key;
                                     break;
                                 }
