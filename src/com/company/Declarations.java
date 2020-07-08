@@ -21,6 +21,12 @@ public class Declarations {
        System.out.println(this.declarations);
    }
 
+//    public void addAssignmentToVariable(String variableName, String value) {
+//        this.declarations.replace(variableName, value);
+//
+//        System.out.println(this.declarations);
+//    }
+
     public HashMap<String, Integer> getDeclarations() {
         return this.declarations;
     }
