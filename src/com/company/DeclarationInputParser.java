@@ -56,4 +56,6 @@ public class DeclarationInputParser {
     }
 
 
+    public void declare() {
+    }
 }

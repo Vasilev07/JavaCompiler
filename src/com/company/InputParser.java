@@ -13,7 +13,7 @@ public class InputParser {
     private String variableDeclarationWithAssignmentRegEx = "\\w+\\s\\w+\\s=\\s\\d+;";
     private String variableAssignmentRegEx = "\\w+\\s=\\s\\d+;";
     private String variableAssignmentToExistingVariableRegEx = "\\w+\\s=\\s\\w+;";
-    private  String variableDeclarationWithAssignmentToExistingVariableRegEx = "\\w+\\s\\w+\\s=\\s\\w+;";
+    private String variableDeclarationWithAssignmentToExistingVariableRegEx = "\\w+\\s\\w+\\s=\\s\\w+;";
     private String variableValueCheck = "\\w+";
     private String variableAssigmentToExistingVariableWithExpression = "\\w+\\s=\\s(\\w+((\\s[+]\\s)+|(\\s[-]\\s))+)+\\w+;";
     private String variableDeclarationWithAssigmentToExpression = "\\w+\\s\\w+\\s=\\s(\\w+((\\s[+]\\s)+|(\\s[-]\\s))+)+\\w+;";
@@ -21,6 +21,8 @@ public class InputParser {
     private String methodParametersRegex = "([(]\\s?(\\w+\\s\\w+[,]?\\s?)+[)])";
     private String returnStatment = "return\\s\\w+(\\s?[+|-]?\\s?\\w+?)+?;";
     private String methodInvocation = "\\w+([(]\\w+?(,\\s\\w+)+?[)]);";
+    private String variableDeclarationWithAssigmentOfMethodInvocation = "(\\w+\\s\\w+\\s=\\s)(\\w+([(]\\w+?(,\\s\\w+)+?[)]));";
+    private String variableAssigmentToMethodInvocationResult = "(\\w+\\s=\\s)(\\w+([(]\\w+?(,\\s\\w+)+?[)]));";
     boolean isStillInMethodDeclaration = false;
     boolean shouldMakeComputatioForMethod = false;
     private String methodParameters = "_\\w+_\\d+";
@@ -208,11 +210,9 @@ public class InputParser {
             if (isStillInMethodDeclaration) {
                 // skipping return and space
                 String expression = this.inputToParse.substring(7, this.inputToParse.length() - 1);
-//                System.out.println(expression.toString());
 
                 try {
                     this.declarationInputParser.assign(lastMethodName, expression);
-//                    System.out.println(methodExpressionToCompute);
                 } catch (Exception e) {
                     System.out.println(e);
                 }
@@ -220,31 +220,47 @@ public class InputParser {
         } else if (isMethodInvocation()) {
             String methodName = words[0].substring(0, words[0].indexOf("("));
             String[] parameters = this.inputToParse.substring(this.inputToParse.indexOf("(") + 1, this.inputToParse.indexOf(")")).split(",\\s");
+
             this.methodInvocation(methodName, parameters);
 
+            this.performMethodInvocation(methodName);
+
+        } else if (isVariableDeclarationWithAssigmentOfMethodInvocation()) {
+            String variableName = words[1];
+            String methodName = words[3].substring(0, words[3].indexOf("("));
+            String[] parameters = this.inputToParse.substring(this.inputToParse.indexOf("(") + 1, this.inputToParse.indexOf(")")).split(",\\s");
+
+            this.methodInvocation(methodName, parameters);
+
+            this.performMethodInvocation(methodName);
+
             try {
-                int methodExpreessionValue = this.declarationInputParser.getVariableValue(methodName);
-                String methodExpressionToCompute = this.declarationInputParser.methodExpressionValue(methodExpreessionValue);
-                String methodResultVariableName = "result_" + methodName;
-                this.declarationInputParser.declare(methodResultVariableName);
-                String[] expressions = methodExpressionToCompute.split(" ");
-                this.shouldMakeComputatioForMethod = true;
-                this.lastMethodName = methodName;
-                this.performComputation(methodResultVariableName, expressions);
-                System.out.println("string refference " + methodExpressionToCompute);
+                int resultOfMethodInvocation = this.declarationInputParser.getVariableValue("result_" + methodName);
+                this.declarationInputParser.declare(variableName);
+                this.declarationInputParser.assign(variableName, resultOfMethodInvocation);
             } catch (Exception e) {
-                this.shouldMakeComputatioForMethod = false;
-                System.out.println("NO variable found");
+                System.out.println("Something happened during method invocation calculations");
             }
+        } else if (isVariableAssigmentToMethodInvocationResult()) {
+            String variableName = words[0];
+            String methodName = words[2].substring(0, words[2].indexOf("("));
+            String[] parameters = this.inputToParse.substring(this.inputToParse.indexOf("(") + 1, this.inputToParse.indexOf(")")).split(",\\s");
 
-//            StringBuilder expression = new StringBuilder();
-//            int sum(int a, int b) {
-            // sum(1, 2);
-            this.shouldMakeComputatioForMethod = false;
-            this.lastMethodName = "";
+            this.methodInvocation(methodName, parameters);
 
+            this.performMethodInvocation(methodName);
+
+            try {
+                int resultOfMethodInvocation = this.declarationInputParser.getVariableValue("result_" + methodName);
+
+                this.declarationInputParser.assign(variableName, resultOfMethodInvocation);
+
+            } catch (Exception e) {
+                System.out.println("No such variable found");
+            }
         }
     }
+
     private boolean isNumber(String element) {
         try {
             new java.math.BigInteger(element);
@@ -256,7 +272,25 @@ public class InputParser {
             return false;
         }
     }
+    private void performMethodInvocation(String methodName) {
+        try {
+            int methodExpreessionValue = this.declarationInputParser.getVariableValue(methodName);
+            String methodExpressionToCompute = this.declarationInputParser.methodExpressionValue(methodExpreessionValue);
+            String methodResultVariableName = "result_" + methodName;
+            this.declarationInputParser.declare(methodResultVariableName);
+            String[] expressions = methodExpressionToCompute.split(" ");
+            this.shouldMakeComputatioForMethod = true;
+            this.lastMethodName = methodName;
+            this.performComputation(methodResultVariableName, expressions);
+            this.declarationInputParser.declare();
+        } catch (Exception e) {
+            this.shouldMakeComputatioForMethod = false;
+            System.out.println("NO variable found");
+        }
 
+        this.shouldMakeComputatioForMethod = false;
+        this.lastMethodName = "";
+    }
     private void methodInvocation(String methodName, String[] parameters) {
         for (int i = 0; i < parameters.length; i++) {
             String parameter = parameters[i];
@@ -290,8 +324,6 @@ public class InputParser {
         int result;
         String initVariable = "";
         try {
-//            assert this.declarationInputParser.getVariableValue(lastMethodName + expression[0]);
-
             result = this.declarationInputParser.getVariableValue(expression[0]);
 
         } catch (Exception e) {
@@ -321,7 +353,6 @@ public class InputParser {
         for (int i = 1; i < expression.length; i++) {
             if(i % 2 == 0) {
                 try {
-//                    System.out.println(expression[i]);
                     new java.math.BigInteger(expression[i]);
                     //it is number
                     currentNumber = Integer.parseInt(expression[i]);
@@ -439,7 +470,18 @@ public class InputParser {
         }
         return false;
     }
-
+    private boolean isVariableDeclarationWithAssigmentOfMethodInvocation() {
+        if (this.inputToParse.matches(variableDeclarationWithAssigmentOfMethodInvocation)) {
+            return true;
+        }
+        return false;
+    }
+    private boolean isVariableAssigmentToMethodInvocationResult() {
+        if (this.inputToParse.matches(variableAssigmentToMethodInvocationResult)) {
+            return true;
+        }
+        return false;
+    }
     private static String[] getSliceOfArray(String[] arr, int start, int end)
     {
 
