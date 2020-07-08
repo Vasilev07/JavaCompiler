@@ -7,6 +7,7 @@ import java.util.*;
 
 public class InputParser {
     String lastMethodName = "";
+    String lastAssertionMethod = "";
     private String inputToParse;
     private DeclarationInputParser declarationInputParser = new DeclarationInputParser();
     private String declarationRegEx ="\\w+\\s\\w+;";
@@ -18,17 +19,17 @@ public class InputParser {
     private String variableAssigmentToExistingVariableWithExpression = "\\w+\\s=\\s(\\w+((\\s[+]\\s)+|(\\s[-]\\s))+)+\\w+;";
     private String variableDeclarationWithAssigmentToExpression = "\\w+\\s\\w+\\s=\\s(\\w+((\\s[+]\\s)+|(\\s[-]\\s))+)+\\w+;";
     private String methodDeclaration = "(\\w+\\s\\w+)([(]\\s?(\\w+\\s\\w+[,]?\\s?)+[)])\\s[{]";
-    private String methodParametersRegex = "([(]\\s?(\\w+\\s\\w+[,]?\\s?)+[)])";
     private String returnStatment = "return\\s\\w+(\\s?[+|-]?\\s?\\w+?)+?;";
     private String methodInvocation = "\\w+([(]\\w+?(,\\s\\w+)+?[)]);";
     private String variableDeclarationWithAssigmentOfMethodInvocation = "(\\w+\\s\\w+\\s=\\s)(\\w+([(]\\w+?(,\\s\\w+)+?[)]));";
     private String variableAssigmentToMethodInvocationResult = "(\\w+\\s=\\s)(\\w+([(]\\w+?(,\\s\\w+)+?[)]));";
+    private String testMethodDeclaration = "(\\w+\\s\\w+)([(][)])\\s[{]";
+    private String testAssertion = "assert\\s(\\w+|\\d),\\s\\w+(\\w+([(]\\w+?(,\\s\\w+)+?[)]));";
+    private String testMethodInvocation = "test\\s\\w+([(][)]);";
     boolean isStillInMethodDeclaration = false;
     boolean shouldMakeComputatioForMethod = false;
     private String methodParameters = "_\\w+_\\d+";
 
-
-    // \w+\s\w+\s=\s(\w+((\s[+]\s)+|(\s[-]\s))+)+\w+;
     public void parse(String input) {
         this.inputToParse = input;
         String[] words = this.inputToParse.split("\\s+");
@@ -260,6 +261,74 @@ public class InputParser {
             } catch (Exception e) {
                 System.out.println("No such variable found");
             }
+        } else if (isTestMethodDeclaration()) {
+            isStillInMethodDeclaration = true;
+            String variableName = words[1].substring(0, words[1].indexOf("("));
+            this.lastMethodName = variableName;
+            this.lastAssertionMethod = variableName;
+
+            try {
+                this.declarationInputParser.declare(variableName);
+            } catch (Exception e) {
+                System.out.println(e);
+            }
+        } else if (isTestAssertion()) {
+            String variableToAssert = words[1].substring(0, words[1].length() - 1);
+            String methodName = words[2].substring(0, words[2].indexOf("("));
+            String[] parameters = this.inputToParse.substring(this.inputToParse.indexOf("(") + 1, this.inputToParse.indexOf(")")).split(",\\s");
+            try {
+                this.methodInvocation(methodName, parameters);
+                this.performMethodInvocation(methodName);
+                int resultOfMethodInvocation = this.declarationInputParser.getVariableValue("result_" + methodName);
+
+                if (isNumber(variableToAssert)){
+                    if (Integer.parseInt(variableToAssert) == resultOfMethodInvocation) {
+                        try {
+                            this.declarationInputParser.assign(lastAssertionMethod,  lastAssertionMethod + " runs successfully");
+                        } catch (Exception e) {
+                            System.out.println(e);
+                        }
+                    } else {
+                        try {
+                            this.declarationInputParser.assign(lastAssertionMethod,  lastAssertionMethod + " fails");
+                        } catch (Exception e) {
+                            System.out.println(e);
+                        }
+                    }
+                } else {
+                    try {
+                        int varValue = this.declarationInputParser.getVariableValue(lastAssertionMethod + "_" + variableToAssert);
+
+                        if (varValue == resultOfMethodInvocation) {
+                            try {
+                                this.declarationInputParser.assign(lastAssertionMethod,  lastAssertionMethod + " runs successfully");
+                            } catch (Exception e) {
+                                System.out.println(e);
+                            }
+                        } else {
+                            try {
+                                this.declarationInputParser.assign(lastAssertionMethod,  lastAssertionMethod + " fails");
+                            } catch (Exception e) {
+                                System.out.println(e);
+                            }
+                        }
+                    } catch (Exception e2) {
+                        System.out.println(e2);
+                    }
+                }
+                lastAssertionMethod = "";
+            } catch (Exception e) {
+                System.out.println(e);
+            }
+        } else if (isTestMethodInvocation()) {
+            String testMethodToInvoke = words[1].substring(0, words[1].indexOf("("));
+
+            try {
+                int methodValue = this.declarationInputParser.getVariableValue(testMethodToInvoke);
+                System.out.println(this.declarationInputParser.methodExpressionValue(methodValue));
+            } catch (Exception e) {
+
+            }
         }
     }
 
@@ -487,6 +556,24 @@ public class InputParser {
     }
     private boolean isVariableAssigmentToMethodInvocationResult() {
         if (this.inputToParse.matches(variableAssigmentToMethodInvocationResult)) {
+            return true;
+        }
+        return false;
+    }
+    private boolean isTestMethodDeclaration() {
+        if (this.inputToParse.matches(testMethodDeclaration)) {
+            return true;
+        }
+        return false;
+    }
+    private boolean isTestAssertion() {
+        if (this.inputToParse.matches(testAssertion)) {
+            return true;
+        }
+        return false;
+    }
+    private boolean isTestMethodInvocation() {
+        if (this.inputToParse.matches(testMethodInvocation)) {
             return true;
         }
         return false;
