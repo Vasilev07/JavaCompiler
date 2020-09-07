@@ -1,10 +1,10 @@
 package com.company;
 
-public class VariableDeclaration implements Declaration {
+public class Variable implements Declaration {
     private DeclarationInputParser declarationInputParser;
     private String variableName;
 
-    public VariableDeclaration(DeclarationInputParser declarationInputParser, String variableName) {
+    public Variable(DeclarationInputParser declarationInputParser, String variableName) {
         this.declarationInputParser = declarationInputParser;
         this.variableName = variableName;
     }

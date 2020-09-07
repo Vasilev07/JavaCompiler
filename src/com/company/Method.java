@@ -1,14 +1,14 @@
 package com.company;
 
-public class MethodDeclaration implements Declaration {
+public class Method implements Declaration {
     private DeclarationInputParser declarationInputParser;
     private String methodName;
-    private VariableDeclaration variableDeclaration;
+    private Variable variableDeclaration;
 
-    public MethodDeclaration(DeclarationInputParser declarationInputParser, String methodName) {
+    public Method(DeclarationInputParser declarationInputParser, String methodName) {
         this.declarationInputParser = declarationInputParser;
         this.methodName = methodName;
-        this.variableDeclaration = new VariableDeclaration(declarationInputParser, methodName);
+        this.variableDeclaration = new Variable(declarationInputParser, methodName);
     }
 
     @Override
@@ -20,7 +20,7 @@ public class MethodDeclaration implements Declaration {
         variableDeclaration.declare(variable);
     }
 
-    public void declareMethodParameters(String[] methodParametersArray) {
+    public void declareParameters(String[] methodParametersArray) {
         for (int i = 0; i < methodParametersArray.length; i++) {
             String token = methodParametersArray[i];
             try {

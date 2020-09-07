@@ -1,8 +1,5 @@
 package com.company;
 
-import java.util.concurrent.ExecutionException;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.*;
 
 public class InputParser {
@@ -41,20 +38,20 @@ public class InputParser {
             String methodParameters = this.inputToParse
                     .substring(this.inputToParse.indexOf("(") + 1, this.inputToParse.indexOf(")"));
 
-            MethodDeclaration methodDeclaration = new MethodDeclaration(this.declarationInputParser, variableName);
+            Method method = new Method(this.declarationInputParser, variableName);
 
             if (methodParameters.length() <= 2) {
                 // single parameter
             } else {
                 String[] methodParametersArray = methodParameters.split(",\\s");
-                methodDeclaration.declareMethodParameters(methodParametersArray);
+                method.declareParameters(methodParametersArray);
             }
 
             try {
-                methodDeclaration.declare();
+                method.declare();
                 // expected method parameter length
                 String paramLength = variableName + "_" + "param_length";
-                methodDeclaration.declare(paramLength);
+                method.declare(paramLength);
                 this.declarationInputParser.assign(paramLength, methodParameters.split(",\\s").length);
             } catch (Exception e) {
                 System.out.println(e);
@@ -63,7 +60,7 @@ public class InputParser {
             System.out.println("we have declaration here");
 
             String variableName = words[1].substring(0, words[1].length() - 1);
-            VariableDeclaration variableDeclaration = new VariableDeclaration(this.declarationInputParser, variableName);
+            Variable variableDeclaration = new Variable(this.declarationInputParser, variableName);
 
             try {
                 if (this.isStillInMethodDeclaration) {
