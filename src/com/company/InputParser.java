@@ -37,31 +37,24 @@ public class InputParser {
         if (isMethodDeclaration()) {
             isStillInMethodDeclaration = true;
             String variableName = words[1].substring(0, words[1].indexOf("("));
-            this.lastMethodName = variableName;
-            String methodParameters = this.inputToParse.substring(this.inputToParse.indexOf("(") + 1, this.inputToParse.indexOf(")"));
+            lastMethodName = variableName;
+            String methodParameters = this.inputToParse
+                    .substring(this.inputToParse.indexOf("(") + 1, this.inputToParse.indexOf(")"));
+
+            MethodDeclaration methodDeclaration = new MethodDeclaration(this.declarationInputParser, variableName);
+
             if (methodParameters.length() <= 2) {
                 // single parameter
             } else {
                 String[] methodParametersArray = methodParameters.split(",\\s");
-                System.out.println(methodParametersArray.length);
-                for (int i = 0; i < methodParametersArray.length; i++) {
-                    String token = methodParametersArray[i];
-                    try {
-                        String[] tokens = token.split("\\s");
-                        String methodParameterName = lastMethodName + "_" + tokens[1] + "_" + i;
-
-                        this.declarationInputParser.declare(methodParameterName);
-                    } catch (Exception e) {
-                        System.out.println(e);
-                    }
-                }
+                methodDeclaration.declareMethodParameters(methodParametersArray);
             }
 
             try {
-                this.declarationInputParser.declare(variableName);
+                methodDeclaration.declare();
                 // expected method parameter length
                 String paramLength = variableName + "_" + "param_length";
-                this.declarationInputParser.declare(paramLength);
+                methodDeclaration.declare(paramLength);
                 this.declarationInputParser.assign(paramLength, methodParameters.split(",\\s").length);
             } catch (Exception e) {
                 System.out.println(e);
@@ -70,12 +63,14 @@ public class InputParser {
             System.out.println("we have declaration here");
 
             String variableName = words[1].substring(0, words[1].length() - 1);
+            VariableDeclaration variableDeclaration = new VariableDeclaration(this.declarationInputParser, variableName);
+
             try {
                 if (this.isStillInMethodDeclaration) {
                     //method declaration
-                    this.declarationInputParser.declare(lastMethodName + "_" + variableName);
+                    variableDeclaration.declare(lastMethodName + "_" + variableName);
                 } else {
-                    this.declarationInputParser.declare(variableName);
+                    variableDeclaration.declare();
                 }
             } catch (Exception e) {
                 System.out.println(e.toString());
