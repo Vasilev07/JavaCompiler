@@ -52,7 +52,7 @@ public class InputParser {
                 // expected method parameter length
                 String paramLength = variableName + "_" + "param_length";
                 method.declare(paramLength);
-                this.declarationInputParser.assign(paramLength, methodParameters.split(",\\s").length);
+                method.assign(paramLength, methodParameters.split(",\\s").length);
             } catch (Exception e) {
                 System.out.println(e);
             }
@@ -82,11 +82,14 @@ public class InputParser {
             try {
                 if (this.isStillInMethodDeclaration) {
                     String currentVariableName = lastMethodName + "_" + variableName;
-                    this.declarationInputParser.declare(currentVariableName);
-                    this.declarationInputParser.assign(currentVariableName, variableValue);
+                    Method method = new Method(this.declarationInputParser, currentVariableName);
+
+                    method.declare(currentVariableName);
+                    method.assign(currentVariableName, variableValue);
                 } else {
-                    this.declarationInputParser.declare(variableName);
-                    this.declarationInputParser.assign(variableName, variableValue);
+                    Variable variable = new Variable(this.declarationInputParser, variableName);
+                    variable.declare(variableName);
+                    variable.assign(variableName, variableValue);
                 }
 
             } catch (Exception e) {
@@ -100,9 +103,11 @@ public class InputParser {
             try {
                 if (this.isStillInMethodDeclaration) {
                     String currentVariableName = lastMethodName + "_" + variableName;
-                    this.declarationInputParser.assign(currentVariableName, variableValue);
+                    Method method = new Method(this.declarationInputParser, currentVariableName);
+                    method.assign(currentVariableName, variableValue);
                 } else {
-                    this.declarationInputParser.assign(variableName, variableValue);
+                    Variable variable = new Variable(this.declarationInputParser, variableName);
+                    variable.assign(variableName, variableValue);
                 }
             } catch (Exception e) {
                 System.out.println(e.toString());

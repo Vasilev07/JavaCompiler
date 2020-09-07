@@ -1,6 +1,6 @@
 package com.company;
 
-public class Variable implements Declaration {
+public class Variable implements Declaration, Assignment {
     private DeclarationInputParser declarationInputParser;
     private String variableName;
 
@@ -18,9 +18,28 @@ public class Variable implements Declaration {
         }
     }
 
+    @Override
     public void declare(String variable) {
         try {
             declarationInputParser.declare(variable);
+        } catch (Exception e) {
+            System.out.println(e);
+        }
+    }
+
+    @Override
+    public void assign(String variable, int value) {
+        try {
+            this.declarationInputParser.assign(variable, value);
+        } catch (Exception e) {
+            System.out.println(e);
+        }
+    }
+
+    @Override
+    public void assign(String variable, String value) {
+        try {
+            this.declarationInputParser.assign(variable, value);
         } catch (Exception e) {
             System.out.println(e);
         }
