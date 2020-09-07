@@ -13,12 +13,20 @@ public class Method implements Declaration, Assignment {
 
     @Override
     public void declare() {
-        variableDeclaration.declare();
+        try {
+            variableDeclaration.declare();
+        } catch (Exception e) {
+            System.out.println(e);
+        }
     }
 
     @Override
     public void declare(String variable) {
-        variableDeclaration.declare(variable);
+        try {
+            variableDeclaration.declare(variable);
+        } catch (Exception e) {
+            System.out.println(e);
+        }
     }
 
     @Override
@@ -36,6 +44,14 @@ public class Method implements Declaration, Assignment {
             this.declarationInputParser.assign(variable, value);
         } catch (Exception e) {
             System.out.println(e);
+        }
+    }
+
+    public int getVariableValue(String existingMethodVariableName) throws Exception {
+        try {
+            return this.declarationInputParser.getVariableValue(existingMethodVariableName);
+        } catch (Exception e) {
+           throw new Exception(e);
         }
     }
 

@@ -115,17 +115,20 @@ public class InputParser {
         } else if (isExistingVariableAssignmentToExistingVariable()) {
             String newVariableName = words[0];
             String existingVariableName = words[2].substring(0, words[2].length() - 1);
-
+            // might have an issue
             try {
                 if (isStillInMethodDeclaration) {
                     String newMethodVariableName = lastMethodName + "_" + newVariableName;
                     String existingMethodVariableName = lastMethodName + "_" + existingVariableName;
 
-                    int existingVariableValue = this.declarationInputParser.getVariableValue(existingMethodVariableName);
-                    this.declarationInputParser.assign(newMethodVariableName, existingVariableValue);
+                    Method method = new Method(this.declarationInputParser, newMethodVariableName);
+
+                    int existingVariableValue = method.getVariableValue(existingMethodVariableName);
+                    method.assign(newMethodVariableName, existingVariableValue);
                 } else {
-                    int existingVariableValue = this.declarationInputParser.getVariableValue(existingVariableName);
-                    this.declarationInputParser.assign(newVariableName, existingVariableValue);
+                    Variable variable = new Variable(this.declarationInputParser, newVariableName);
+                    int existingVariableValue = variable.getVariableValue(existingVariableName);
+                    variable.assign(newVariableName, existingVariableValue);
                 }
             } catch (Exception e) {
                 System.out.println("Such variable does not exist");
@@ -138,7 +141,7 @@ public class InputParser {
                 if (isStillInMethodDeclaration) {
                     String existingMethodVariableName = lastMethodName + "_" + words[3].substring(0, words[3].length() - 1);
                     String newMethodVariableName = lastMethodName + "_" + newVariableName;
-
+//                    Method method = new Method();
                     int existingVariableValue = this.declarationInputParser.getVariableValue(existingMethodVariableName);
                     this.declarationInputParser.declare(newMethodVariableName);
                     this.declarationInputParser.assign(newMethodVariableName, existingVariableValue);

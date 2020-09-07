@@ -45,6 +45,14 @@ public class Variable implements Declaration, Assignment {
         }
     }
 
+    public int getVariableValue(String existingMethodVariableName) throws Exception {
+        try {
+            return this.declarationInputParser.getVariableValue(existingMethodVariableName);
+        } catch (Exception e) {
+            throw new Exception(e);
+        }
+    }
+
     @Override
     public String toString() {
         return "VariableDeclaration{" +
