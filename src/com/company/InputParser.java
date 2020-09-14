@@ -60,14 +60,16 @@ public class InputParser {
             System.out.println("we have declaration here");
 
             String variableName = words[1].substring(0, words[1].length() - 1);
-            Variable variableDeclaration = new Variable(this.declarationInputParser, variableName);
 
             try {
                 if (this.isStillInMethodDeclaration) {
-                    //method declaration
-                    variableDeclaration.declare(lastMethodName + "_" + variableName);
+                    Method method = new Method(this.declarationInputParser, lastMethodName + "_" + variableName);
+
+                    method.declare(lastMethodName + "_" + variableName);
                 } else {
-                    variableDeclaration.declare();
+                    Variable variable = new Variable(this.declarationInputParser);
+
+                    variable.declare(variableName);
                 }
             } catch (Exception e) {
                 System.out.println(e.toString());
@@ -87,7 +89,7 @@ public class InputParser {
                     method.declare(currentVariableName);
                     method.assign(currentVariableName, variableValue);
                 } else {
-                    Variable variable = new Variable(this.declarationInputParser, variableName);
+                    Variable variable = new Variable(this.declarationInputParser);
                     variable.declare(variableName);
                     variable.assign(variableName, variableValue);
                 }
@@ -106,7 +108,7 @@ public class InputParser {
                     Method method = new Method(this.declarationInputParser, currentVariableName);
                     method.assign(currentVariableName, variableValue);
                 } else {
-                    Variable variable = new Variable(this.declarationInputParser, variableName);
+                    Variable variable = new Variable(this.declarationInputParser);
                     variable.assign(variableName, variableValue);
                 }
             } catch (Exception e) {
@@ -126,7 +128,7 @@ public class InputParser {
                     int existingVariableValue = method.getVariableValue(existingMethodVariableName);
                     method.assign(newMethodVariableName, existingVariableValue);
                 } else {
-                    Variable variable = new Variable(this.declarationInputParser, newVariableName);
+                    Variable variable = new Variable(this.declarationInputParser);
                     int existingVariableValue = variable.getVariableValue(existingVariableName);
                     variable.assign(newVariableName, existingVariableValue);
                 }
@@ -148,7 +150,7 @@ public class InputParser {
                     method.assign(newMethodVariableName, existingVariableValue);
                 } else {
                     int existingVariableValue = this.declarationInputParser.getVariableValue(existingVariableName);
-                    Variable variable = new Variable(this.declarationInputParser, newVariableName);
+                    Variable variable = new Variable(this.declarationInputParser);
                     variable.declare(newVariableName);
 
                     variable.assign(newVariableName, existingVariableValue);
@@ -203,7 +205,7 @@ public class InputParser {
                     method.declare(methodVariableName);
                     method.performComputation(methodVariableName, expression, lastMethodName, shouldMakeComputatioForMethod);
                 } else  {
-                    Variable variable = new Variable(this.declarationInputParser, variableName);
+                    Variable variable = new Variable(this.declarationInputParser);
                     Method method = new Method(this.declarationInputParser, variableName);
 
                     variable.declare(variableName);
@@ -257,7 +259,7 @@ public class InputParser {
             try {
 
                 int resultOfMethodInvocation = this.declarationInputParser.getVariableValue("result_" + methodName);
-                Variable variable = new Variable(this.declarationInputParser, variableName);
+                Variable variable = new Variable(this.declarationInputParser);
 
                 variable.declare(variableName);
                 variable.assign(variableName, resultOfMethodInvocation);
@@ -280,7 +282,7 @@ public class InputParser {
             try {
 
                 int resultOfMethodInvocation = this.declarationInputParser.getVariableValue("result_" + methodName);
-                Variable variable = new Variable(this.declarationInputParser, variableName);
+                Variable variable = new Variable(this.declarationInputParser);
 
                 variable.assign(variableName, resultOfMethodInvocation);
 

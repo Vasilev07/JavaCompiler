@@ -2,19 +2,9 @@ package com.company;
 
 public class Variable implements Declaration, Assignment {
     private DeclarationInputParser declarationInputParser;
-    private String variableName;
 
-    public Variable(DeclarationInputParser declarationInputParser, String variableName) {
+    public Variable(DeclarationInputParser declarationInputParser) {
         this.declarationInputParser = declarationInputParser;
-        this.variableName = variableName;
-    }
-
-    public void declare() {
-        try {
-            declarationInputParser.declare(variableName);
-        } catch (Exception e) {
-            System.out.println(e);
-        }
     }
 
     @Override
@@ -54,8 +44,6 @@ public class Variable implements Declaration, Assignment {
 
     @Override
     public String toString() {
-        return "VariableDeclaration{" +
-                ", variableName='" + variableName + '\'' +
-                '}';
+        return "";
     }
 }
