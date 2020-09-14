@@ -41,12 +41,6 @@ public class DeclarationInputParser {
         System.out.println(this.declarations);
     }
 
-//    public void addAssignmentToVariable(String variableName, String value) {
-//        this.declarations.replace(variableName, value);
-//
-//        System.out.println(this.declarations);
-//    }
-
     public String methodExpressionValue(int uniqueValue) throws Exception {
         if (this.methodReturns.containsKey(uniqueValue)) {
             return this.methodReturns.get(uniqueValue);

@@ -14,7 +14,6 @@ public class Method implements Declaration, Assignment {
         this.variableDeclaration = new Variable(declarationInputParser, methodName);
     }
 
-    @Override
     public void declare() {
         try {
             variableDeclaration.declare();

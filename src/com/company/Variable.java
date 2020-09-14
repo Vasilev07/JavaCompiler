@@ -9,7 +9,6 @@ public class Variable implements Declaration, Assignment {
         this.variableName = variableName;
     }
 
-    @Override
     public void declare() {
         try {
             declarationInputParser.declare(variableName);
