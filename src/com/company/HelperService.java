@@ -4,11 +4,9 @@ public class HelperService {
     public static boolean isNumber(String element) {
         try {
             new java.math.BigInteger(element);
-            //it is number
             Integer.parseInt(element);
             return true;
         } catch (NumberFormatException e) {
-            // it is variable
             return false;
         }
     }
