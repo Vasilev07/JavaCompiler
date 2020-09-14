@@ -5,13 +5,13 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class DeclarationInputParser {
     private HashMap<String, Integer> declarations = new HashMap<String, Integer>();
-    private Declarations currentDeclaration = new Declarations();
     private HashMap<Integer, String> methodReturns = new HashMap<Integer, String>();
+
     public void declare(String variable) throws Exception {
         if (!this.declarations.containsKey(variable)) {
-            this.currentDeclaration.add(variable);
+            this.declarations.put(variable, null);
 
-            this.declarations = this.currentDeclaration.getDeclarations();
+            System.out.println(this.declarations);
         } else {
             throw new Exception("Variable" + variable + " has already been declared.");
         }
@@ -19,7 +19,7 @@ public class DeclarationInputParser {
 
     public void assign(String variable, int value) throws Exception {
         if (this.declarations.containsKey(variable)) {
-            this.currentDeclaration.addAssignmentToVariable(variable, value);
+            this.addAssignmentToVariable(variable, value);
         } else {
             throw new Exception("Variable " + variable + " is not declared.");
         }
@@ -28,12 +28,24 @@ public class DeclarationInputParser {
     public void assign(String variable, String value) throws Exception {
         if (this.declarations.containsKey(variable)) {
             int id = (int)(new Date().getTime());
-            this.currentDeclaration.addAssignmentToVariable(variable, id);
+            this.addAssignmentToVariable(variable, id);
             this.methodReturns.put(id, value);
         } else {
             throw new Exception("Variable " + variable + " is not declared.");
         }
     }
+
+    public void addAssignmentToVariable(String variableName, int value) {
+        this.declarations.replace(variableName, value);
+
+        System.out.println(this.declarations);
+    }
+
+//    public void addAssignmentToVariable(String variableName, String value) {
+//        this.declarations.replace(variableName, value);
+//
+//        System.out.println(this.declarations);
+//    }
 
     public String methodExpressionValue(int uniqueValue) throws Exception {
         if (this.methodReturns.containsKey(uniqueValue)) {
@@ -53,9 +65,5 @@ public class DeclarationInputParser {
 
     public Set<String> getAllDeclarationKeys() {
         return this.declarations.keySet();
-    }
-
-
-    public void declare() {
     }
 }

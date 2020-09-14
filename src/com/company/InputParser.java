@@ -7,6 +7,7 @@ public class InputParser {
     String lastAssertionMethod = "";
     private String inputToParse;
     private DeclarationInputParser declarationInputParser = new DeclarationInputParser();
+    private HelperService helperService = new HelperService();
     private String declarationRegEx ="\\w+\\s\\w+;";
     private String variableDeclarationWithAssignmentRegEx = "\\w+\\s\\w+\\s=\\s\\d+;";
     private String variableAssignmentRegEx = "\\w+\\s=\\s\\d+;";
@@ -141,15 +142,17 @@ public class InputParser {
                 if (isStillInMethodDeclaration) {
                     String existingMethodVariableName = lastMethodName + "_" + words[3].substring(0, words[3].length() - 1);
                     String newMethodVariableName = lastMethodName + "_" + newVariableName;
-//                    Method method = new Method();
+                    Method method = new Method(this.declarationInputParser, newMethodVariableName);
                     int existingVariableValue = this.declarationInputParser.getVariableValue(existingMethodVariableName);
-                    this.declarationInputParser.declare(newMethodVariableName);
-                    this.declarationInputParser.assign(newMethodVariableName, existingVariableValue);
+
+                    method.declare(newMethodVariableName);
+                    method.assign(newMethodVariableName, existingVariableValue);
                 } else {
                     int existingVariableValue = this.declarationInputParser.getVariableValue(existingVariableName);
-                    this.declarationInputParser.declare(newVariableName);
+                    Variable variable = new Variable(this.declarationInputParser, newVariableName);
+                    variable.declare(newVariableName);
 
-                    this.declarationInputParser.assign(newVariableName, existingVariableValue);
+                    variable.assign(newVariableName, existingVariableValue);
                 }
 
             } catch (Exception e) {
@@ -168,7 +171,7 @@ public class InputParser {
             // remove semicolon
             words[words.length - 1] = words[words.length - 1].substring(0, words[words.length - 1].length() - 1);
 
-            String[] expression = getSliceOfArray(words, 2, words.length);
+            String[] expression = helperService.getSliceOfArray(words, 2, words.length);
             if (isStillInMethodDeclaration) {
                 String methodVariableName = lastMethodName + "_" + variableName;
 
@@ -180,7 +183,7 @@ public class InputParser {
         } else if(isVariableDeclarationWithAssigmentOfExpression()) {
             String variableName = words[1];
             words[words.length - 1] = words[words.length - 1].substring(0, words[words.length - 1].length() - 1);
-            String[] expression = getSliceOfArray(words, 3, words.length);
+            String[] expression = helperService.getSliceOfArray(words, 3, words.length);
 
             try {
                 if (isStillInMethodDeclaration) {
@@ -190,15 +193,18 @@ public class InputParser {
                         // this mutation is not so good ...
                         String currentElement = expression[i];
 
-                        if (!currentElement.equals("+") && !currentElement.equals("-") && !isNumber(expression[i])) {
+                        if (!currentElement.equals("+") && !currentElement.equals("-") && !helperService.isNumber(expression[i])) {
                             expression[i] = lastMethodName + "_" + currentElement;
                         }
                     }
+                    Method method = new Method(this.declarationInputParser, methodVariableName);
 
-                    this.declarationInputParser.declare(methodVariableName);
+                    method.declare(methodVariableName);
                     this.performComputation(methodVariableName, expression);
                 } else  {
-                    this.declarationInputParser.declare(variableName);
+                    Variable variable = new Variable(this.declarationInputParser, variableName);
+
+                    variable.declare(variableName);
                     this.performComputation(variableName, expression);
                 }
             } catch (Exception e) {
@@ -213,7 +219,8 @@ public class InputParser {
                 String expression = this.inputToParse.substring(7, this.inputToParse.length() - 1);
 
                 try {
-                    this.declarationInputParser.assign(lastMethodName, expression);
+                    Method method = new Method(this.declarationInputParser, lastMethodName);
+                    method.assign(lastMethodName, expression);
                 } catch (Exception e) {
                     System.out.println(e);
                 }
@@ -238,8 +245,10 @@ public class InputParser {
             try {
 
                 int resultOfMethodInvocation = this.declarationInputParser.getVariableValue("result_" + methodName);
-                this.declarationInputParser.declare(variableName);
-                this.declarationInputParser.assign(variableName, resultOfMethodInvocation);
+                Variable variable = new Variable(this.declarationInputParser, variableName);
+
+                variable.declare(variableName);
+                variable.assign(variableName, resultOfMethodInvocation);
             } catch (Exception e) {
                 System.out.println("Something happened during method invocation calculations");
             }
@@ -255,8 +264,9 @@ public class InputParser {
             try {
 
                 int resultOfMethodInvocation = this.declarationInputParser.getVariableValue("result_" + methodName);
+                Variable variable = new Variable(this.declarationInputParser, variableName);
 
-                this.declarationInputParser.assign(variableName, resultOfMethodInvocation);
+                variable.assign(variableName, resultOfMethodInvocation);
 
             } catch (Exception e) {
                 System.out.println("No such variable found");
@@ -280,17 +290,19 @@ public class InputParser {
                 this.methodInvocation(methodName, parameters);
                 this.performMethodInvocation(methodName);
                 int resultOfMethodInvocation = this.declarationInputParser.getVariableValue("result_" + methodName);
+                Method method = new Method(this.declarationInputParser, lastAssertionMethod);
 
-                if (isNumber(variableToAssert)){
+                if (helperService.isNumber(variableToAssert)){
                     if (Integer.parseInt(variableToAssert) == resultOfMethodInvocation) {
                         try {
-                            this.declarationInputParser.assign(lastAssertionMethod,  lastAssertionMethod + " runs successfully");
+
+                            method.assign(lastAssertionMethod,  lastAssertionMethod + " runs successfully");
                         } catch (Exception e) {
                             System.out.println(e);
                         }
                     } else {
                         try {
-                            this.declarationInputParser.assign(lastAssertionMethod,  lastAssertionMethod + " fails");
+                            method.assign(lastAssertionMethod,  lastAssertionMethod + " fails");
                         } catch (Exception e) {
                             System.out.println(e);
                         }
@@ -301,13 +313,13 @@ public class InputParser {
 
                         if (varValue == resultOfMethodInvocation) {
                             try {
-                                this.declarationInputParser.assign(lastAssertionMethod,  lastAssertionMethod + " runs successfully");
+                                method.assign(lastAssertionMethod,  lastAssertionMethod + " runs successfully");
                             } catch (Exception e) {
                                 System.out.println(e);
                             }
                         } else {
                             try {
-                                this.declarationInputParser.assign(lastAssertionMethod,  lastAssertionMethod + " fails");
+                                method.assign(lastAssertionMethod,  lastAssertionMethod + " fails");
                             } catch (Exception e) {
                                 System.out.println(e);
                             }
@@ -332,17 +344,7 @@ public class InputParser {
         }
     }
 
-    private boolean isNumber(String element) {
-        try {
-            new java.math.BigInteger(element);
-            //it is number
-            Integer.parseInt(element);
-            return true;
-        } catch (NumberFormatException e) {
-            // it is variable
-            return false;
-        }
-    }
+
     private void performMethodInvocation(String methodName) {
         try {
             int methodExpreessionValue = this.declarationInputParser.getVariableValue(methodName);
@@ -376,7 +378,7 @@ public class InputParser {
                 String valueOfParameterSuffix = declarationKey.split("_")[declarationKey.split("_").length - 1];
 
                 if (declarationKey.matches(methodName + methodParameters) && valueOfCurrentIterationIndex.equals(valueOfParameterSuffix)){
-                    if(this.isNumber(parameters[i])) {
+                    if(helperService.isNumber(parameters[i])) {
                         try {
                             this.declarationInputParser.assign(declarationKey, Integer.parseInt(parameters[i]));
                         } catch (Exception e) {
@@ -454,7 +456,7 @@ public class InputParser {
                     }
                 }
 
-                result = computeExpression(result, currentNumber, previousSign);
+                result = helperService.computeExpression(result, currentNumber, previousSign);
             } else {
                 // we have sign
                 previousSign = expression[i];
@@ -467,126 +469,56 @@ public class InputParser {
             System.out.println("Such variable does not exist");
         }
     }
-    private int computeExpression(int currentResult, int value, String sign) {
-        if (sign.equals("+")) {
-            currentResult += value;
-        } else {
-            currentResult -= value;
-        }
 
-        return currentResult;
-    }
     private boolean isDeclaration() {
-        if (this.inputToParse.matches(declarationRegEx)) {
-            return true;
-        }
-        return false;
+        return this.inputToParse.matches(declarationRegEx);
     }
     private boolean isDeclarationWithAssigment() {
-        if (this.inputToParse.matches(variableDeclarationWithAssignmentRegEx)) {
-            return true;
-        }
-        return false;
+        return this.inputToParse.matches(variableDeclarationWithAssignmentRegEx);
     }
     private boolean isAssignment() {
-        if (this.inputToParse.matches(variableAssignmentRegEx)) {
-            return true;
-        }
-        return false;
+        return this.inputToParse.matches(variableAssignmentRegEx);
     }
     private boolean isExistingVariableAssignmentToExistingVariable() {
-        if (this.inputToParse.matches(variableAssignmentToExistingVariableRegEx)) {
-            return true;
-        }
-        return false;
+        return this.inputToParse.matches(variableAssignmentToExistingVariableRegEx);
     }
     private boolean isDeclarationWithAssigmentToExistingVariable() {
-        if (this.inputToParse.matches(variableDeclarationWithAssignmentToExistingVariableRegEx)) {
-            return true;
-        }
-        return false;
+        return this.inputToParse.matches(variableDeclarationWithAssignmentToExistingVariableRegEx);
     }
     private boolean isVariableCheck() {
-        if (this.inputToParse.matches(variableValueCheck)) {
-            return true;
-        }
-        return false;
+        return this.inputToParse.matches(variableValueCheck);
     }
     private boolean isVariableAssigmentToExistingVariableWithExpression() {
-        if (this.inputToParse.matches(variableAssigmentToExistingVariableWithExpression)) {
-            return true;
-        }
-        return false;
+        return this.inputToParse.matches(variableAssigmentToExistingVariableWithExpression);
     }
     private boolean isVariableDeclarationWithAssigmentOfExpression() {
-        if (this.inputToParse.matches(variableDeclarationWithAssigmentToExpression)) {
-            return true;
-        }
-        return false;
+        return this.inputToParse.matches(variableDeclarationWithAssigmentToExpression);
     }
     private boolean endOfMethodDeclaration() {
-        if (this.inputToParse.matches("[}]")) {
-            return true;
-        }
-        return false;
+        return this.inputToParse.matches("[}]");
     }
     private boolean isMethodDeclaration() {
-        if (this.inputToParse.matches(methodDeclaration)) {
-            return true;
-        }
-        return false;
+        return this.inputToParse.matches(methodDeclaration);
     }
     private boolean isMethodReturnStatment() {
-        if (this.inputToParse.matches(returnStatment)) {
-            return true;
-        }
-        return false;
+        return this.inputToParse.matches(returnStatment);
     }
     private boolean isMethodInvocation() {
-        if (this.inputToParse.matches(methodInvocation)) {
-            return true;
-        }
-        return false;
+        return this.inputToParse.matches(methodInvocation);
     }
     private boolean isVariableDeclarationWithAssigmentOfMethodInvocation() {
-        if (this.inputToParse.matches(variableDeclarationWithAssigmentOfMethodInvocation)) {
-            return true;
-        }
-        return false;
+        return this.inputToParse.matches(variableDeclarationWithAssigmentOfMethodInvocation);
     }
     private boolean isVariableAssigmentToMethodInvocationResult() {
-        if (this.inputToParse.matches(variableAssigmentToMethodInvocationResult)) {
-            return true;
-        }
-        return false;
+        return this.inputToParse.matches(variableAssigmentToMethodInvocationResult);
     }
     private boolean isTestMethodDeclaration() {
-        if (this.inputToParse.matches(testMethodDeclaration)) {
-            return true;
-        }
-        return false;
+        return this.inputToParse.matches(testMethodDeclaration);
     }
     private boolean isTestAssertion() {
-        if (this.inputToParse.matches(testAssertion)) {
-            return true;
-        }
-        return false;
+        return this.inputToParse.matches(testAssertion);
     }
     private boolean isTestMethodInvocation() {
-        if (this.inputToParse.matches(testMethodInvocation)) {
-            return true;
-        }
-        return false;
-    }
-    private static String[] getSliceOfArray(String[] arr, int start, int end)
-    {
-
-        String[] slice = new String[end - start];
-
-        for (int i = 0; i < slice.length; i++) {
-            slice[i] = arr[start + i];
-        }
-
-        return slice;
+        return this.inputToParse.matches(testMethodInvocation);
     }
 }
