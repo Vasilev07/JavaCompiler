@@ -11,15 +11,7 @@ public class Method implements Declaration, Assignment {
     public Method(DeclarationInputParser declarationInputParser, String methodName) {
         this.declarationInputParser = declarationInputParser;
         this.methodName = methodName;
-        this.variableDeclaration = new Variable(declarationInputParser, methodName);
-    }
-
-    public void declare() {
-        try {
-            variableDeclaration.declare();
-        } catch (Exception e) {
-            System.out.println(e);
-        }
+        this.variableDeclaration = new Variable(declarationInputParser);
     }
 
     @Override
