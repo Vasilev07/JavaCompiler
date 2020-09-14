@@ -48,7 +48,7 @@ public class InputParser {
             }
 
             try {
-                method.declare();
+                method.declare(variableName);
                 // expected method parameter length
                 String paramLength = variableName + "_" + "param_length";
                 method.declare(paramLength);
