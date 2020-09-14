@@ -174,10 +174,12 @@ public class InputParser {
             String[] expression = helperService.getSliceOfArray(words, 2, words.length);
             if (isStillInMethodDeclaration) {
                 String methodVariableName = lastMethodName + "_" + variableName;
-
-                this.performComputation(methodVariableName, expression);
+                Method method = new Method(this.declarationInputParser, methodVariableName);
+                method.performComputation(methodVariableName, expression, lastMethodName, shouldMakeComputatioForMethod);
             } else {
-                this.performComputation(variableName, expression);
+                Method method = new Method(this.declarationInputParser, variableName);
+
+                method.performComputation(variableName, expression, lastMethodName, shouldMakeComputatioForMethod);
             }
 
         } else if(isVariableDeclarationWithAssigmentOfExpression()) {
@@ -200,12 +202,14 @@ public class InputParser {
                     Method method = new Method(this.declarationInputParser, methodVariableName);
 
                     method.declare(methodVariableName);
-                    this.performComputation(methodVariableName, expression);
+                    method.performComputation(methodVariableName, expression, lastMethodName, shouldMakeComputatioForMethod);
                 } else  {
                     Variable variable = new Variable(this.declarationInputParser, variableName);
+                    Method method = new Method(this.declarationInputParser, variableName);
 
                     variable.declare(variableName);
-                    this.performComputation(variableName, expression);
+                    method.performComputation(variableName, expression, lastMethodName, shouldMakeComputatioForMethod);
+
                 }
             } catch (Exception e) {
                 System.out.println("Such variable does not exist");
@@ -228,19 +232,28 @@ public class InputParser {
         } else if (isMethodInvocation()) {
             String methodName = words[0].substring(0, words[0].indexOf("("));
             String[] parameters = this.inputToParse.substring(this.inputToParse.indexOf("(") + 1, this.inputToParse.indexOf(")")).split(",\\s");
+            Method method = new Method(this.declarationInputParser, methodName);
 
-            this.methodInvocation(methodName, parameters);
+            method.methodInvocation(methodName, parameters);
+            this.lastMethodName = methodName;
+            this.shouldMakeComputatioForMethod = true;
 
-            this.performMethodInvocation(methodName);
+            method.performMethodInvocation(methodName, shouldMakeComputatioForMethod);
+
+            this.shouldMakeComputatioForMethod = false;
+            this.lastMethodName = "";
 
         } else if (isVariableDeclarationWithAssigmentOfMethodInvocation()) {
             String variableName = words[1];
             String methodName = words[3].substring(0, words[3].indexOf("("));
             String[] parameters = this.inputToParse.substring(this.inputToParse.indexOf("(") + 1, this.inputToParse.indexOf(")")).split(",\\s");
+            Method method = new Method(this.declarationInputParser, methodName);
 
-            this.methodInvocation(methodName, parameters);
+            method.methodInvocation(methodName, parameters);
+            this.lastMethodName = methodName;
+            this.shouldMakeComputatioForMethod = true;
 
-            this.performMethodInvocation(methodName);
+            method.performMethodInvocation(methodName, shouldMakeComputatioForMethod);
 
             try {
 
@@ -250,16 +263,20 @@ public class InputParser {
                 variable.declare(variableName);
                 variable.assign(variableName, resultOfMethodInvocation);
             } catch (Exception e) {
+                this.shouldMakeComputatioForMethod = false;
+                this.lastMethodName = "";
                 System.out.println("Something happened during method invocation calculations");
             }
         } else if (isVariableAssigmentToMethodInvocationResult()) {
             String variableName = words[0];
             String methodName = words[2].substring(0, words[2].indexOf("("));
             String[] parameters = this.inputToParse.substring(this.inputToParse.indexOf("(") + 1, this.inputToParse.indexOf(")")).split(",\\s");
+            Method method = new Method(this.declarationInputParser, methodName);
+            method.methodInvocation(methodName, parameters);
+            this.lastMethodName = methodName;
+            this.shouldMakeComputatioForMethod = true;
 
-            this.methodInvocation(methodName, parameters);
-
-            this.performMethodInvocation(methodName);
+            method.performMethodInvocation(methodName, shouldMakeComputatioForMethod);
 
             try {
 
@@ -269,6 +286,8 @@ public class InputParser {
                 variable.assign(variableName, resultOfMethodInvocation);
 
             } catch (Exception e) {
+                this.shouldMakeComputatioForMethod = false;
+                this.lastMethodName = "";
                 System.out.println("No such variable found");
             }
         } else if (isTestMethodDeclaration()) {
@@ -287,10 +306,14 @@ public class InputParser {
             String methodName = words[2].substring(0, words[2].indexOf("("));
             String[] parameters = this.inputToParse.substring(this.inputToParse.indexOf("(") + 1, this.inputToParse.indexOf(")")).split(",\\s");
             try {
-                this.methodInvocation(methodName, parameters);
-                this.performMethodInvocation(methodName);
-                int resultOfMethodInvocation = this.declarationInputParser.getVariableValue("result_" + methodName);
                 Method method = new Method(this.declarationInputParser, lastAssertionMethod);
+
+                method.methodInvocation(methodName, parameters);
+                this.lastMethodName = methodName;
+                this.shouldMakeComputatioForMethod = true;
+
+                method.performMethodInvocation(methodName, shouldMakeComputatioForMethod);
+                int resultOfMethodInvocation = this.declarationInputParser.getVariableValue("result_" + methodName);
 
                 if (helperService.isNumber(variableToAssert)){
                     if (Integer.parseInt(variableToAssert) == resultOfMethodInvocation) {
@@ -304,6 +327,7 @@ public class InputParser {
                         try {
                             method.assign(lastAssertionMethod,  lastAssertionMethod + " fails");
                         } catch (Exception e) {
+
                             System.out.println(e);
                         }
                     }
@@ -341,132 +365,6 @@ public class InputParser {
             } catch (Exception e) {
 
             }
-        }
-    }
-
-
-    private void performMethodInvocation(String methodName) {
-        try {
-            int methodExpreessionValue = this.declarationInputParser.getVariableValue(methodName);
-            String methodExpressionToCompute = this.declarationInputParser.methodExpressionValue(methodExpreessionValue);
-            String methodResultVariableName = "result_" + methodName;
-            try {
-                this.declarationInputParser.getVariableValue(methodResultVariableName);
-            } catch (Exception e) {
-                this.declarationInputParser.declare(methodResultVariableName);
-            }
-
-            String[] expressions = methodExpressionToCompute.split(" ");
-            this.shouldMakeComputatioForMethod = true;
-            this.lastMethodName = methodName;
-            this.performComputation(methodResultVariableName, expressions);
-        } catch (Exception e) {
-            this.shouldMakeComputatioForMethod = false;
-            System.out.println("NO variable found");
-        }
-
-        this.shouldMakeComputatioForMethod = false;
-        this.lastMethodName = "";
-    }
-    private void methodInvocation(String methodName, String[] parameters) {
-        for (int i = 0; i < parameters.length; i++) {
-            String parameter = parameters[i];
-
-            Set<String> declarationKeys = this.declarationInputParser.getAllDeclarationKeys();
-            for (String declarationKey: declarationKeys) {
-                String valueOfCurrentIterationIndex = (String.valueOf(i));
-                String valueOfParameterSuffix = declarationKey.split("_")[declarationKey.split("_").length - 1];
-
-                if (declarationKey.matches(methodName + methodParameters) && valueOfCurrentIterationIndex.equals(valueOfParameterSuffix)){
-                    if(helperService.isNumber(parameters[i])) {
-                        try {
-                            this.declarationInputParser.assign(declarationKey, Integer.parseInt(parameters[i]));
-                        } catch (Exception e) {
-                            System.out.println(e);
-                        }
-                    } else {
-                        try {
-                            int variableValue = this.declarationInputParser.getVariableValue(parameter);
-                            this.declarationInputParser.assign(declarationKey, variableValue);
-                        } catch (Exception e) {
-                            System.out.println(e);
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    private void performComputation(String variableName, String[] expression) {
-        int result;
-        String initVariable = "";
-        try {
-            if (!shouldMakeComputatioForMethod) {
-                result = this.declarationInputParser.getVariableValue(expression[0]);
-            } else {
-                throw new Exception("we have to perform actions for method invocation");
-            }
-        } catch (Exception e) {
-            try {
-                result = Integer.parseInt(expression[0]);
-            } catch (Exception e2) {
-                try {
-                    String variable = "";
-                     for (String key: this.declarationInputParser.getAllDeclarationKeys()) {
-                          if (key.matches(lastMethodName + "_" + expression[0] + "_\\d")) {
-                              variable = key;
-                              initVariable = key;
-                              break;
-                          }
-                      }
-                  result = this.declarationInputParser.getVariableValue(variable);
-                } catch (Exception e3) {
-                    System.out.println(e3);
-                    result = 0;
-                }
-            }
-        }
-
-        String previousSign = "";
-        int currentNumber = 0;
-
-        for (int i = 1; i < expression.length; i++) {
-            if(i % 2 == 0) {
-                try {
-                    new java.math.BigInteger(expression[i]);
-                    //it is number
-                    currentNumber = Integer.parseInt(expression[i]);
-                } catch (NumberFormatException e) {
-                    // it is variable
-                    try {
-                        if (shouldMakeComputatioForMethod) {
-                            String variable = "";
-                            for (String key: this.declarationInputParser.getAllDeclarationKeys()) {
-                                if (key.matches(lastMethodName + "_" + expression[i] + "_\\d") && !key.equals(initVariable)) {
-                                    variable = key;
-                                    break;
-                                }
-                            }
-                            currentNumber = this.declarationInputParser.getVariableValue(variable);
-                        } else {
-                            currentNumber = this.declarationInputParser.getVariableValue(expression[i]);
-                        }
-                    } catch (Exception ex) {
-                        System.out.println("Such variable does not exist");
-                    }
-                }
-
-                result = helperService.computeExpression(result, currentNumber, previousSign);
-            } else {
-                // we have sign
-                previousSign = expression[i];
-            }
-        }
-
-        try {
-            this.declarationInputParser.assign(variableName, result);
-        } catch (Exception e) {
-            System.out.println("Such variable does not exist");
         }
     }
 
