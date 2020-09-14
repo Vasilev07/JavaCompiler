@@ -7,7 +7,7 @@ public class InputParser {
     String lastAssertionMethod = "";
     private String inputToParse;
     private DeclarationInputParser declarationInputParser = new DeclarationInputParser();
-    private HelperService helperService = new HelperService();
+    private HelperService helperService;
     private String declarationRegEx ="\\w+\\s\\w+;";
     private String variableDeclarationWithAssignmentRegEx = "\\w+\\s\\w+\\s=\\s\\d+;";
     private String variableAssignmentRegEx = "\\w+\\s=\\s\\d+;";
@@ -26,7 +26,6 @@ public class InputParser {
     private String testMethodInvocation = "test\\s\\w+([(][)]);";
     boolean isStillInMethodDeclaration = false;
     boolean shouldMakeComputatioForMethod = false;
-    private String methodParameters = "_\\w+_\\d+";
 
     public void parse(String input) {
         this.inputToParse = input;

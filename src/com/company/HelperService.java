@@ -1,7 +1,7 @@
 package com.company;
 
 public class HelperService {
-    public boolean isNumber(String element) {
+    public static boolean isNumber(String element) {
         try {
             new java.math.BigInteger(element);
             //it is number
@@ -13,7 +13,7 @@ public class HelperService {
         }
     }
 
-    public int computeExpression(int currentResult, int value, String sign) {
+    public static int computeExpression(int currentResult, int value, String sign) {
         if (sign.equals("+")) {
             currentResult += value;
         } else {

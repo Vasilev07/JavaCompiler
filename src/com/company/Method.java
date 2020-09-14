@@ -149,7 +149,7 @@ public class Method implements Declaration, Assignment {
         try {
             int methodExpreessionValue = this.declarationInputParser.getVariableValue(methodName);
             String methodExpressionToCompute = this.declarationInputParser.methodExpressionValue(methodExpreessionValue);
-            String methodResultVariableName = "result_" + methodName;
+            String methodResultVariableName = methodName;
             try {
                 this.declarationInputParser.getVariableValue(methodResultVariableName);
             } catch (Exception e) {
@@ -174,7 +174,7 @@ public class Method implements Declaration, Assignment {
                 String valueOfCurrentIterationIndex = (String.valueOf(i));
                 String valueOfParameterSuffix = declarationKey.split("_")[declarationKey.split("_").length - 1];
 
-                if (declarationKey.matches(methodName + parameters) && valueOfCurrentIterationIndex.equals(valueOfParameterSuffix)){
+                if (declarationKey.matches(methodName + "_\\w+_\\d+") && valueOfCurrentIterationIndex.equals(valueOfParameterSuffix)){
                     if(helperService.isNumber(parameters[i])) {
                         try {
                             this.declarationInputParser.assign(declarationKey, Integer.parseInt(parameters[i]));
