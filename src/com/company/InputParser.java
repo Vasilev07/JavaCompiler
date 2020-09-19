@@ -38,13 +38,13 @@ public class InputParser {
             String methodParameters = this.inputToParse
                     .substring(this.inputToParse.indexOf("(") + 1, this.inputToParse.indexOf(")"));
 
-            Method method = new Method(this.declarationInputParser, variableName);
+            Method method = new Method(this.declarationInputParser);
 
             if (methodParameters.length() <= 2) {
                 // single parameter
             } else {
                 String[] methodParametersArray = methodParameters.split(",\\s");
-                method.declareParameters(methodParametersArray);
+                method.declareParameters(methodParametersArray, lastMethodName);
             }
 
             try {
@@ -63,7 +63,7 @@ public class InputParser {
 
             try {
                 if (this.isStillInMethodDeclaration) {
-                    Method method = new Method(this.declarationInputParser, lastMethodName + "_" + variableName);
+                    Method method = new Method(this.declarationInputParser);
 
                     method.declare(lastMethodName + "_" + variableName);
                 } else {
@@ -84,7 +84,7 @@ public class InputParser {
             try {
                 if (this.isStillInMethodDeclaration) {
                     String currentVariableName = lastMethodName + "_" + variableName;
-                    Method method = new Method(this.declarationInputParser, currentVariableName);
+                    Method method = new Method(this.declarationInputParser);
 
                     method.declare(currentVariableName);
                     method.assign(currentVariableName, variableValue);
@@ -105,7 +105,7 @@ public class InputParser {
             try {
                 if (this.isStillInMethodDeclaration) {
                     String currentVariableName = lastMethodName + "_" + variableName;
-                    Method method = new Method(this.declarationInputParser, currentVariableName);
+                    Method method = new Method(this.declarationInputParser);
                     method.assign(currentVariableName, variableValue);
                 } else {
                     Variable variable = new Variable(this.declarationInputParser);
@@ -123,7 +123,7 @@ public class InputParser {
                     String newMethodVariableName = lastMethodName + "_" + newVariableName;
                     String existingMethodVariableName = lastMethodName + "_" + existingVariableName;
 
-                    Method method = new Method(this.declarationInputParser, newMethodVariableName);
+                    Method method = new Method(this.declarationInputParser);
 
                     int existingVariableValue = method.getVariableValue(existingMethodVariableName);
                     method.assign(newMethodVariableName, existingVariableValue);
@@ -143,7 +143,7 @@ public class InputParser {
                 if (isStillInMethodDeclaration) {
                     String existingMethodVariableName = lastMethodName + "_" + words[3].substring(0, words[3].length() - 1);
                     String newMethodVariableName = lastMethodName + "_" + newVariableName;
-                    Method method = new Method(this.declarationInputParser, newMethodVariableName);
+                    Method method = new Method(this.declarationInputParser);
                     int existingVariableValue = this.declarationInputParser.getVariableValue(existingMethodVariableName);
 
                     method.declare(newMethodVariableName);
@@ -175,10 +175,10 @@ public class InputParser {
             String[] expression = helperService.getSliceOfArray(words, 2, words.length);
             if (isStillInMethodDeclaration) {
                 String methodVariableName = lastMethodName + "_" + variableName;
-                Method method = new Method(this.declarationInputParser, methodVariableName);
+                Method method = new Method(this.declarationInputParser);
                 method.performComputation(methodVariableName, expression, lastMethodName, shouldMakeComputatioForMethod);
             } else {
-                Method method = new Method(this.declarationInputParser, variableName);
+                Method method = new Method(this.declarationInputParser);
 
                 method.performComputation(variableName, expression, lastMethodName, shouldMakeComputatioForMethod);
             }
@@ -200,13 +200,13 @@ public class InputParser {
                             expression[i] = lastMethodName + "_" + currentElement;
                         }
                     }
-                    Method method = new Method(this.declarationInputParser, methodVariableName);
+                    Method method = new Method(this.declarationInputParser);
 
                     method.declare(methodVariableName);
                     method.performComputation(methodVariableName, expression, lastMethodName, shouldMakeComputatioForMethod);
                 } else  {
                     Variable variable = new Variable(this.declarationInputParser);
-                    Method method = new Method(this.declarationInputParser, variableName);
+                    Method method = new Method(this.declarationInputParser);
 
                     variable.declare(variableName);
                     method.performComputation(variableName, expression, lastMethodName, shouldMakeComputatioForMethod);
@@ -224,7 +224,7 @@ public class InputParser {
                 String expression = this.inputToParse.substring(7, this.inputToParse.length() - 1);
 
                 try {
-                    Method method = new Method(this.declarationInputParser, lastMethodName);
+                    Method method = new Method(this.declarationInputParser);
                     method.assign(lastMethodName, expression);
                 } catch (Exception e) {
                     System.out.println(e);
@@ -233,7 +233,7 @@ public class InputParser {
         } else if (isMethodInvocation()) {
             String methodName = words[0].substring(0, words[0].indexOf("("));
             String[] parameters = this.inputToParse.substring(this.inputToParse.indexOf("(") + 1, this.inputToParse.indexOf(")")).split(",\\s");
-            Method method = new Method(this.declarationInputParser, methodName);
+            Method method = new Method(this.declarationInputParser);
 
             method.methodInvocation(methodName, parameters);
             this.lastMethodName = methodName;
@@ -248,7 +248,7 @@ public class InputParser {
             String variableName = words[1];
             String methodName = words[3].substring(0, words[3].indexOf("("));
             String[] parameters = this.inputToParse.substring(this.inputToParse.indexOf("(") + 1, this.inputToParse.indexOf(")")).split(",\\s");
-            Method method = new Method(this.declarationInputParser, methodName);
+            Method method = new Method(this.declarationInputParser);
 
             method.methodInvocation(methodName, parameters);
             this.lastMethodName = methodName;
@@ -272,7 +272,7 @@ public class InputParser {
             String variableName = words[0];
             String methodName = words[2].substring(0, words[2].indexOf("("));
             String[] parameters = this.inputToParse.substring(this.inputToParse.indexOf("(") + 1, this.inputToParse.indexOf(")")).split(",\\s");
-            Method method = new Method(this.declarationInputParser, methodName);
+            Method method = new Method(this.declarationInputParser);
             method.methodInvocation(methodName, parameters);
             this.lastMethodName = methodName;
             this.shouldMakeComputatioForMethod = true;
@@ -307,7 +307,7 @@ public class InputParser {
             String methodName = words[2].substring(0, words[2].indexOf("("));
             String[] parameters = this.inputToParse.substring(this.inputToParse.indexOf("(") + 1, this.inputToParse.indexOf(")")).split(",\\s");
             try {
-                Method method = new Method(this.declarationInputParser, lastAssertionMethod);
+                Method method = new Method(this.declarationInputParser);
 
                 method.methodInvocation(methodName, parameters);
                 this.lastMethodName = methodName;

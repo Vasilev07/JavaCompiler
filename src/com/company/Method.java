@@ -5,12 +5,10 @@ import java.util.Set;
 public class Method implements Declaration, Assignment {
     private DeclarationInputParser declarationInputParser;
     private HelperService helperService = new HelperService();
-    private String methodName;
     private Variable variableDeclaration;
 
-    public Method(DeclarationInputParser declarationInputParser, String methodName) {
+    public Method(DeclarationInputParser declarationInputParser) {
         this.declarationInputParser = declarationInputParser;
-        this.methodName = methodName;
         this.variableDeclaration = new Variable(declarationInputParser);
     }
 
@@ -49,7 +47,7 @@ public class Method implements Declaration, Assignment {
         }
     }
 
-    public void declareParameters(String[] methodParametersArray) {
+    public void declareParameters(String[] methodParametersArray, String methodName) {
         for (int i = 0; i < methodParametersArray.length; i++) {
             String token = methodParametersArray[i];
             try {
