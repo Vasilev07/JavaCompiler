@@ -41,7 +41,6 @@ public class InputParser {
             Method method = new Method(this.declarationInputParser);
 
             if (methodParameters.length() <= 2) {
-                // single parameter
             } else {
                 String[] methodParametersArray = methodParameters.split(",\\s");
                 method.declareParameters(methodParametersArray, lastMethodName);
@@ -49,16 +48,10 @@ public class InputParser {
 
             try {
                 method.declare(variableName);
-                // expected method parameter length
-                String paramLength = variableName + "_" + "param_length";
-                method.declare(paramLength);
-                method.assign(paramLength, methodParameters.split(",\\s").length);
             } catch (Exception e) {
                 System.out.println(e);
             }
-        }else if (isDeclaration() && !words[0].equals("return")) {
-            System.out.println("we have declaration here");
-
+        } else if (isDeclaration() && !words[0].equals("return")) {
             String variableName = words[1].substring(0, words[1].length() - 1);
 
             try {
@@ -80,18 +73,15 @@ public class InputParser {
 
             String variableName = words[1];
             int variableValue = Integer.parseInt(words[3].substring(0, words[3].length() - 1));
-
+            DeclarationWithAssignment declarationWithAssignment = new DeclarationWithAssignment();
             try {
                 if (this.isStillInMethodDeclaration) {
                     String currentVariableName = lastMethodName + "_" + variableName;
                     Method method = new Method(this.declarationInputParser);
-
-                    method.declare(currentVariableName);
-                    method.assign(currentVariableName, variableValue);
+                    declarationWithAssignment.perform(method, currentVariableName, variableValue);
                 } else {
                     Variable variable = new Variable(this.declarationInputParser);
-                    variable.declare(variableName);
-                    variable.assign(variableName, variableValue);
+                    declarationWithAssignment.perform(variable, variableName, variableValue);
                 }
 
             } catch (Exception e) {
@@ -120,6 +110,7 @@ public class InputParser {
             // might have an issue
             try {
                 if (isStillInMethodDeclaration) {
+                    // same as isDeclarationWithAssigmentToExistingVariable
                     String newMethodVariableName = lastMethodName + "_" + newVariableName;
                     String existingMethodVariableName = lastMethodName + "_" + existingVariableName;
 
@@ -128,6 +119,7 @@ public class InputParser {
                     int existingVariableValue = method.getVariableValue(existingMethodVariableName);
                     method.assign(newMethodVariableName, existingVariableValue);
                 } else {
+                    // same as isDeclarationWithAssigmentToExistingVariable
                     Variable variable = new Variable(this.declarationInputParser);
                     int existingVariableValue = variable.getVariableValue(existingVariableName);
                     variable.assign(newVariableName, existingVariableValue);
@@ -141,6 +133,7 @@ public class InputParser {
 
             try {
                 if (isStillInMethodDeclaration) {
+                    // same as isExistingVariableAssignmentToExistingVariable
                     String existingMethodVariableName = lastMethodName + "_" + words[3].substring(0, words[3].length() - 1);
                     String newMethodVariableName = lastMethodName + "_" + newVariableName;
                     Method method = new Method(this.declarationInputParser);
@@ -149,6 +142,7 @@ public class InputParser {
                     method.declare(newMethodVariableName);
                     method.assign(newMethodVariableName, existingVariableValue);
                 } else {
+                    // same as isExistingVariableAssignmentToExistingVariable
                     int existingVariableValue = this.declarationInputParser.getVariableValue(existingVariableName);
                     Variable variable = new Variable(this.declarationInputParser);
                     variable.declare(newVariableName);
@@ -185,6 +179,7 @@ public class InputParser {
 
         } else if(isVariableDeclarationWithAssigmentOfExpression()) {
             String variableName = words[1];
+            // escape fucking semicolon
             words[words.length - 1] = words[words.length - 1].substring(0, words[words.length - 1].length() - 1);
             String[] expression = helperService.getSliceOfArray(words, 3, words.length);
 
@@ -254,11 +249,12 @@ public class InputParser {
             this.lastMethodName = methodName;
             this.shouldMakeComputatioForMethod = true;
 
+            // refactor this
             method.performMethodInvocation(methodName, shouldMakeComputatioForMethod);
 
             try {
 
-                int resultOfMethodInvocation = this.declarationInputParser.getVariableValue("result_" + methodName);
+                int resultOfMethodInvocation = this.declarationInputParser.getVariableValue(methodName);
                 Variable variable = new Variable(this.declarationInputParser);
 
                 variable.declare(variableName);

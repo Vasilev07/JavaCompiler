@@ -146,6 +146,7 @@ public class Method implements Declaration, Assignment {
             }
 
             String[] expressions = methodExpressionToCompute.split(" ");
+            // refactor this
             this.performComputation(methodResultVariableName, expressions, methodName, shouldMakeComputatioForMethod);
         } catch (Exception e) {
             System.out.println("NO variable found");
