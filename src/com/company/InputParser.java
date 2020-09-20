@@ -130,24 +130,18 @@ public class InputParser {
         } else if (isDeclarationWithAssigmentToExistingVariable()) {
             String newVariableName = words[1];
             String existingVariableName = words[3].substring(0, words[3].length() - 1);
-
+            DeclarationWithAssignment declarationWithAssignment = new DeclarationWithAssignment();
             try {
                 if (isStillInMethodDeclaration) {
-                    // same as isExistingVariableAssignmentToExistingVariable
                     String existingMethodVariableName = lastMethodName + "_" + words[3].substring(0, words[3].length() - 1);
                     String newMethodVariableName = lastMethodName + "_" + newVariableName;
                     Method method = new Method(this.declarationInputParser);
                     int existingVariableValue = this.declarationInputParser.getVariableValue(existingMethodVariableName);
-
-                    method.declare(newMethodVariableName);
-                    method.assign(newMethodVariableName, existingVariableValue);
+                    declarationWithAssignment.perform(method, newMethodVariableName, existingVariableValue);
                 } else {
-                    // same as isExistingVariableAssignmentToExistingVariable
                     int existingVariableValue = this.declarationInputParser.getVariableValue(existingVariableName);
                     Variable variable = new Variable(this.declarationInputParser);
-                    variable.declare(newVariableName);
-
-                    variable.assign(newVariableName, existingVariableValue);
+                    declarationWithAssignment.perform(variable, newVariableName, existingVariableValue);
                 }
 
             } catch (Exception e) {
