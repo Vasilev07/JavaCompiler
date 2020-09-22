@@ -33,24 +33,10 @@ public class InputParser {
 
         if (isMethodDeclaration()) {
             isStillInMethodDeclaration = true;
-            String variableName = words[1].substring(0, words[1].indexOf("("));
-            lastMethodName = variableName;
-            String methodParameters = this.inputToParse
-                    .substring(this.inputToParse.indexOf("(") + 1, this.inputToParse.indexOf(")"));
-
-            Method method = new Method(this.declarationInputParser);
-
-            if (methodParameters.length() <= 2) {
-            } else {
-                String[] methodParametersArray = methodParameters.split(",\\s");
-                method.declareParameters(methodParametersArray, lastMethodName);
-            }
-
-            try {
-                method.declare(variableName);
-            } catch (Exception e) {
-                System.out.println(e);
-            }
+            MethodDeclaration methodDeclaration = new MethodDeclaration(this.declarationInputParser, words);
+            methodDeclaration.parse(input);
+            lastMethodName = methodDeclaration.getMethodName();
+            methodDeclaration.declare();
         } else if (isDeclaration() && !words[0].equals("return")) {
             String variableName = words[1].substring(0, words[1].length() - 1);
 
