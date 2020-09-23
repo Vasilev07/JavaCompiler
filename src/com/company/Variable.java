@@ -1,6 +1,6 @@
 package com.company;
 
-public class Variable implements Declaration, Assignment {
+public class Variable implements DeclarationInterface, AssignmentInterface {
     private DeclarationInputParser declarationInputParser;
 
     public Variable(DeclarationInputParser declarationInputParser) {

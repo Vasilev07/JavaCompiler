@@ -2,7 +2,7 @@ package com.company;
 
 import java.util.Set;
 
-public class Method implements Declaration, Assignment {
+public class Method implements DeclarationInterface, AssignmentInterface {
     private DeclarationInputParser declarationInputParser;
     private HelperService helperService = new HelperService();
     private Variable variableDeclaration;

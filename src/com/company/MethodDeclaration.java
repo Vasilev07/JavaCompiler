@@ -1,6 +1,6 @@
 package com.company;
 
-public class MethodDeclaration extends Parser {
+public class MethodDeclaration extends ParserDeclaration {
     private DeclarationInputParser declarationInputParser;
     private String methodParameters;
     private String[] words;
@@ -20,10 +20,6 @@ public class MethodDeclaration extends Parser {
         methodName = words[1].substring(0, words[1].indexOf("("));
         methodParameters = input
                 .substring(input.indexOf("(") + 1, input.indexOf(")"));
-    }
-
-    @Override
-    void assign() {
     }
 
     @Override
