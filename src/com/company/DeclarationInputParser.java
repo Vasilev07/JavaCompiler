@@ -4,8 +4,8 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class DeclarationInputParser {
-    private HashMap<String, Integer> declarations = new HashMap<String, Integer>();
-    private HashMap<Integer, String> methodReturns = new HashMap<Integer, String>();
+    private Map<String, Integer> declarations = new HashMap<String, Integer>();
+    private Map<Integer, String> methodReturns = new HashMap<Integer, String>();
 
     public void declare(String variable) throws Exception {
         if (!this.declarations.containsKey(variable)) {
